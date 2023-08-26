@@ -2,33 +2,52 @@ import { calculateWinner } from './components/winner';
 import Board from './components/Board';
 import { useState } from 'react';
 import './style.scss'
+import History from './components/History';
 import StatusMessage from './components/StatusMessage';
 
 function App() {
-  const [squares,setSquares]= useState(Array(9).fill(null));
-  const [isXnext, setisXnext]=useState(false);
+  const [history,setHistory]=useState([{squares:Array(9).fill(null), isXnext:false}]);
+  const [currentMove, setCurrentMove]=useState(0);
+  const gamingBoard=history[currentMove];
 
-  const winner =calculateWinner(squares);
-    
+  const winner =calculateWinner(gamingBoard.squares);
+
   const handleSquareClick = clickedPosition =>{
-      if(squares[clickedPosition] || winner){
+      if(gamingBoard.squares[clickedPosition] || winner){
           return;
       }
-      setSquares(currentSquares=>{
-          return currentSquares.map((squareValue, position)=>{
+      setHistory(currentHistory=>{
+        const isTraversing=currentMove+1 != currentHistory.length;
+
+        const lastGamingState= isTraversing ?
+        currentHistory[currentMove]
+        : currentHistory[currentHistory.length-1];
+
+          const nextSquaresState=lastGamingState.squares.map((squareValue, position)=>{
               if (clickedPosition == position){
-                  return isXnext ? "X":"O";
+                  return lastGamingState.isXnext ? "X":"O";
               }
               return squareValue;
           });
+
+          const base= isTraversing
+          ? currentHistory.slice(0,currentHistory.indexOf(lastGamingState)+1)
+          : currentHistory;
+
+          return base.concat({squares: nextSquaresState, isXnext:!lastGamingState.isXnext});
       });
-      setisXnext((curr) => !curr);
+      setCurrentMove(move=>move+1);
   };
 
+  const moveTo=move=>{
+    setCurrentMove(move);
+  }
   return ( 
     <div className='app'>
-      <StatusMessage winner={winner} isXnext={isXnext} squares={squares}/>
-      <Board squares={squares} handleSquareClick={handleSquareClick}/>
+      <StatusMessage winner={winner} gamingBoard={gamingBoard}/>
+      <Board squares={gamingBoard.squares} handleSquareClick={handleSquareClick}/>
+      <h2>Game History</h2>
+      <History history={history} moveTo={moveTo} currentMove={currentMove}/>
     </div>
   );
 }
