@@ -5,8 +5,10 @@ import './style.scss'
 import History from './components/History';
 import StatusMessage from './components/StatusMessage';
 
+const NEW_GAME=[{squares:Array(9).fill(null), isXnext:false}];
+
 function App() {
-  const [history,setHistory]=useState([{squares:Array(9).fill(null), isXnext:false}]);
+  const [history,setHistory]=useState(NEW_GAME);
   const [currentMove, setCurrentMove]=useState(0);
   const gamingBoard=history[currentMove];
 
